@@ -16,25 +16,46 @@ public class ComplexFunction implements complex_function {
 	public ComplexFunction() {
 
 	}
+	
+	public ComplexFunction(Operation op, function left, function right) {
+		if (left == null)
+			throw new ArithmeticException("Left function is required");
+
+		this.left = left.copy();
+		if (right != null) // right can be null (In none operation for example)
+			this.right = right.copy();
+		else if (op != Operation.None)
+			throw new ArithmeticException("Right function can be null only if operation is none");
+		this.op = op;
+	}
 
 	/**
 	 * This function is constructor that get Operator as string and two function ,
 	 * f1 and f2
 	 * 
 	 * @param string - operation in string
-	 * @param left - f1
-	 * @param right - f2
+	 * @param left   - f1
+	 * @param right  - f2
 	 */
 	public ComplexFunction(String string, function left, function right) {
+		if (left == null)
+			throw new ArithmeticException("Left function is required");
+		if (string == null)
+			throw new ArithmeticException("Operation is required");
+
 		this.left = left.copy();
 		if (right != null) // right can be null (In none operation for example)
 			this.right = right.copy();
+		else if (string != "none")
+			throw new ArithmeticException("Right function can be null only if operation is none");
 		this.op = getOperationByString(string);
 	}
 
 	/**
-	 * ComplexFunction copy constructor
-	 * Even instance of class that implement function interface , can be copied here into new complex function with none operation.
+	 * ComplexFunction copy constructor Even instance of class that implement
+	 * function interface , can be copied here into new complex function with none
+	 * operation.
+	 * 
 	 * @param f
 	 */
 	public ComplexFunction(function f) {
@@ -43,7 +64,7 @@ public class ComplexFunction implements complex_function {
 			this.right = null;
 			this.op = Operation.None;
 		} else {
-			ComplexFunction cf = (ComplexFunction)f;
+			ComplexFunction cf = (ComplexFunction) f;
 			this.op = cf.op;
 			this.left = cf.left.copy();
 			if (cf.right != null)
@@ -72,6 +93,8 @@ public class ComplexFunction implements complex_function {
 	 * @param left the left to set
 	 */
 	public void setLeft(function left) {
+		if (left == null)
+			throw new ArithmeticException("Left function is required");
 		this.left = left;
 	}
 
@@ -81,20 +104,14 @@ public class ComplexFunction implements complex_function {
 	}
 
 	/**
-	 * @param op the op to set
-	 */
-	public void setOp(Operation op) {
-		this.op = op;
-	}
-	
-	/**
-	 * This equals function isn't fully working for any x, so I created a temp solution as asked from Boaz.
+	 * This equals function isn't fully working for any x, so I created a temp
+	 * solution as asked from Boaz.
 	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof function) {
 			function f = (function) obj;
-			for (double i = 0; i < 1000000; i = i + 0.7) {
+			for (double i = -1000; i < 1000; i = i + 0.7) {
 				if (Math.abs(f.f(i) - this.f(i)) > Monom.EPSILON)
 					return false;
 			}
@@ -104,21 +121,25 @@ public class ComplexFunction implements complex_function {
 	}
 
 	/**
-	 * Function toString for ComplexFunction
-	 * if operation is none im returning only the left side , because the right side is null.
+	 * Function toString for ComplexFunction if operation is none im returning only
+	 * the left side , because the right side is null.
 	 */
 	@Override
 	public String toString() {
-		if(this.op != Operation.None)
+		if (this.op != Operation.None)
 			return getStringByOperation(this.op) + "(" + this.left + "," + this.right + ")";
-		else return this.left.toString();
+		else
+			return this.left.toString();
 	}
 
 	/**
-	 * f Function , returning by Operation the value of the function in x value  == f(x)
+	 * f Function , returning by Operation the value of the function in x value ==
+	 * f(x)
 	 */
 	@Override
 	public double f(double x) {
+		if(this.op != Operation.None && this.right == null)
+			throw new ArithmeticException("Right function can be null only if operation is none");
 		switch (this.op) {
 		case Plus:
 			return (this.left.f(x) + this.right.f(x));
@@ -141,15 +162,37 @@ public class ComplexFunction implements complex_function {
 	}
 
 	/**
-	 * initFromString function , using the initFromStrRecursive function to create ComplexFunction from string
+	 * initFromString function , using the initFromStrRecursive function to create
+	 * ComplexFunction from string
 	 */
 	@Override
 	public function initFromString(String s) {
+		if (s == null)
+			throw new ArithmeticException("String cannot be null");
+
+		s = s.replaceAll(" ", "");
+
+		// this if checks that if I got in the string the char ',' it must come with
+		// operation. otherwise it's normal polynom
+		if (!checkStringStartsOperation(s) && s.contains(","))
+			throw new ArithmeticException("String must start with valid operation (invalid is error or none)");
+
 		function cf = initFromStrRecursive(new ComplexFunction(), s);
 		if (!(cf instanceof ComplexFunction)) {
 			cf = new ComplexFunction(cf);
 		}
 		return cf;
+	}
+
+	/**
+	 * function to check if string starts with operation.
+	 * 
+	 * @param s
+	 * @return
+	 */
+	private boolean checkStringStartsOperation(String s) {
+		return s.startsWith("plus") || s.startsWith("div") || s.startsWith("mul") || s.startsWith("min")
+				|| s.startsWith("max") || s.startsWith("comp");
 	}
 
 	/**
@@ -161,49 +204,68 @@ public class ComplexFunction implements complex_function {
 	}
 
 	/**
-	 * All of the below functions untill comp function is the same , moving and copy current object to left function.
-	 * And putting f1 in the right side , and set the Operation by function.
-	 * I'm copying the current object because after that I'm override this.right and this.op
+	 * All of the below functions untill comp function is the same , moving and copy
+	 * current object to left function. And putting f1 in the right side , and set
+	 * the Operation by function. I'm copying the current object because after that
+	 * I'm override this.right and this.op
 	 */
 	@Override
 	public void plus(function f1) {
+		if (f1 == null)
+			throw new ArithmeticException("Function cannot be null");
+
 		this.left = this.copy();
-		this.right = f1;
+		this.right = f1.copy();
 		this.op = Operation.Plus;
 	}
 
 	@Override
 	public void mul(function f1) {
+		if (f1 == null)
+			throw new ArithmeticException("Function cannot be null");
+
 		this.left = this.copy();
-		this.right = f1;
+		this.right = f1.copy();
 		this.op = Operation.Times;
 	}
 
 	@Override
 	public void div(function f1) {
+		if (f1 == null)
+			throw new ArithmeticException("Function cannot be null");
+
 		this.left = this.copy();
-		this.right = f1;
+		this.right = f1.copy();
 		this.op = Operation.Divid;
 	}
 
 	@Override
 	public void max(function f1) {
+		if (f1 == null)
+			throw new ArithmeticException("Function cannot be null");
+
 		this.left = this.copy();
-		this.right = f1;
+		this.right = f1.copy();
 		this.op = Operation.Max;
 	}
 
 	@Override
 	public void min(function f1) {
+		if (f1 == null)
+			throw new ArithmeticException("Function cannot be null");
+
 		this.left = this.copy();
-		this.right = f1;
+		this.right = f1.copy();
 		this.op = Operation.Min;
 	}
 
 	@Override
 	public void comp(function f1) {
+		if (f1 == null)
+			throw new ArithmeticException("Function cannot be null");
+
 		this.left = this.copy();
-		this.right = f1;
+		this.right = f1.copy();
 		this.op = Operation.Comp;
 	}
 
@@ -232,7 +294,7 @@ public class ComplexFunction implements complex_function {
 		case "none":
 			return Operation.None;
 		case "error":
-			return Operation.Error;
+			throw new ArithmeticException("Operation doesn't exist");
 		default:
 			throw new ArithmeticException("Operation doesn't exist");
 		}
@@ -261,7 +323,7 @@ public class ComplexFunction implements complex_function {
 		case None:
 			return "none";
 		case Error:
-			return "error";
+			throw new ArithmeticException("Operation doesn't exist");
 		default:
 			throw new ArithmeticException("Operation doesn't exist");
 		}
@@ -321,7 +383,7 @@ public class ComplexFunction implements complex_function {
 	 * 
 	 * @param nextString - next string to handle on initFrom string
 	 * @return arr of 2 string , on index 0 got the left function , on index 1 got
-	 *         the rigth function.
+	 *         the right function.
 	 */
 	private String[] splitStringWithBrackets(String nextString) {
 		String[] arr = new String[2];

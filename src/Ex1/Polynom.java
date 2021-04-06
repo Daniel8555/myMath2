@@ -23,11 +23,14 @@ public class Polynom implements Polynom_able {
 	}
 
 	/**
-	 * Constrctor that get string and split by - or + , and then call Monom add function
+	 * Constructor that get string and split by - or + , and then call Monom add function
 	 * @param s: is a string represents a Polynom
 	 */
 	public Polynom(String s) {
 		this();
+		if (s == null)
+			throw new ArithmeticException("String cannot be null");
+		s = s.replaceAll(" ","");
 		String[] splittedArr = s.split("(?=[+-])");
 		for (int i = 0; i < splittedArr.length; i++) {
 			Monom m = new Monom(splittedArr[i]);

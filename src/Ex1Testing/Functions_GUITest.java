@@ -1,8 +1,9 @@
 package Ex1Testing;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import Ex1.ComplexFunction;
@@ -25,66 +26,18 @@ import Ex1.function;
  *
  */
 class Functions_GUITest {
-	public static void main(String[] a) {
+
+	@Test
+	void testDrawFunctions() {
 		Functions_GUI data = FunctionsFactory();
 		int w=1000, h=600, res=200;
 		Range rx = new Range(-10,10);
 		Range ry = new Range(-5,15);
 		data.drawFunctions(w,h,rx,ry,res);
-//		testSaveToFile();
-//		testInitFromFile();
-//		testDrawFunctionsByJson();
-	}
-	private Functions_GUI _data=null;
-//	@BeforeAll
-//	static void setUpBeforeClass() throws Exception {
-//	}
-
-	@BeforeEach
-	void setUp() throws Exception {
-		_data = FunctionsFactory();
-	}
-
-	//@Test
-	void testFunctions_GUI() {
-	//	fail("Not yet implemented");
-	}
-
-	//@Test
-	static void testInitFromFile() {
-		Functions_GUI fg = new Functions_GUI();
-		try {
-			fg.initFromFile("test_files/functions1.txt");
-			int w=1000, h=600, res=200;
-			Range rx = new Range(-10,10);
-			Range ry = new Range(-5,15);
-			fg.drawFunctions(w,h,rx,ry,res);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	//@Test
-	static void testSaveToFile() {
-		Functions_GUI fg = new Functions_GUI();
-		try {
-			fg.initFromFile("test_files/functions1.txt");
-			fg.saveToFile("test_files/functions2.txt");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-	//@Test
-	void testDrawFunctions() {
-		//_data.drawFunctions();
-	//	fail("Not yet implemented");
 	}
 	
-	//@Test
-	static void testDrawFunctionsByJson() {
+	@Test
+	void testDrawFunctionsByJson() {
 		Functions_GUI fg = new Functions_GUI();
 		try {
 			fg.initFromFile("test_files/functions1.txt");
@@ -94,12 +47,40 @@ class Functions_GUITest {
 			e.printStackTrace();
 		}
 	}
+	
 
 	@Test
-	void testDrawFunctionsIntIntRangeRangeInt() {
-//		_data.drawFunctions();
-		//fail("Not yet implemented");
+	void testSaveToFile() {
+		Functions_GUI fg = new Functions_GUI();
+		Functions_GUI fg2 = new Functions_GUI();
+		try {
+			String s = "plus(div(5x^2+3,9),plus(20x,12x^5))";
+			fg.add(new ComplexFunction().initFromString(s));
+			fg.saveToFile("test_files/functions3.txt");
+			fg2.initFromFile("test_files/functions3.txt");
+			assertTrue(fg2.contains(new ComplexFunction().initFromString(s)));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
+	
+	@Test
+	void testInitFromFile() {
+		Functions_GUI fg = new Functions_GUI();
+		Functions_GUI fg2 = new Functions_GUI();
+		try {
+			fg.initFromFile("test_files/functions1.txt");
+			fg.saveToFile("test_files/functions2.txt");
+			fg2.initFromFile("test_files/functions2.txt");
+			assertTrue(fg.containsAll(fg2));
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
 	public static Functions_GUI FunctionsFactory() {
 		Functions_GUI ans = new Functions_GUI();
 		String s1 = "3.1+2.4x^2-x^4";
